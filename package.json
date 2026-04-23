@@ -1,7 +1,7 @@
 {
     "name": "cppincludeguard",
-    "displayName": "C/C++ Include Guard",
-    "description": "Insert C/C++ Include Guard",
+    "displayName": "C/C++ Include Guard (chriku, AkiraMiyakoda)",
+    "description": "Fork of \"Insert C/C++ Include Guard\" by AkiraMiyakoda",
     "version": "1.9.0",
     "license": "MIT",
     "engines": {
@@ -248,9 +248,9 @@
     "dependencies": {
         "uuid": "11.1.0"
     },
-    "publisher": "akiramiyakoda",
+    "publisher": "chriku",
     "repository": {
-        "url": "https://github.com/AkiraMiyakoda/cppIncludeGuard",
+        "url": "https://github.com/chriku/cppIncludeGuard",
         "type": "git"
     },
     "keywords": [
