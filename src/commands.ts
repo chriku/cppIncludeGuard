@@ -33,6 +33,7 @@ function fromGUID(preventDecimal: boolean): string {
   return uuid.toUpperCase().replace(/-/g, "_");
 }
 
+
 /**
  * Generates a macro name from the file name or file path.
  *
@@ -54,6 +55,7 @@ function fromFileName(
   shortenUnderscores: boolean,
   removeExtension: boolean,
   convertPathToSnakeCase: boolean,
+  isHeaderAborter: (file: string) => boolean
 ): string {
   const editor = vscode.window.activeTextEditor;
   if (editor === undefined) {
@@ -66,14 +68,14 @@ function fromFileName(
     return "";
   }
 
-  let fileName = documentUri.toString();
+  let fileName: string = documentUri.toString();
   if (fullPath && baseUri !== undefined) {
     // Convert to path relative to baseUri
     fileName = fileName.substring(baseUri.uri.toString().length + 1);
 
     if (pathDepth > 0 || pathSkip > 0 || convertPathToSnakeCase) {
       const folderSep = "/";
-      let pathSegments = fileName.split(folderSep);
+      let pathSegments: string[] = fileName.split(folderSep);
 
       // Discard the first pathSkip segments (but always keep at least one!)
       pathSegments = pathSegments.slice(
@@ -84,6 +86,8 @@ function fromFileName(
         // Keep only the last pathDepth folders and the file segment
         pathSegments = pathSegments.slice(-(pathDepth + 1));
       }
+
+      pathSegments = pathSegments.slice(pathSegments.findLastIndex(isHeaderAborter) + 1);
 
       if (convertPathToSnakeCase) {
         pathSegments = pathSegments.map(convertPascalCaseToSnakeCase);
@@ -183,6 +187,24 @@ function createDirectives(fileUri: vscode.Uri): Array<string> {
     false,
   );
 
+
+  /**
+   * Check if the file is a header file
+   * @param file Uri of a file
+   */
+  function isHeaderAborter(part: string): boolean {
+    const headerAborters = getConfig(fileUri).get<string[]>("Folder Aborters", [
+      ".h",
+      ".hpp",
+      ".h++",
+      ".hh",
+    ]);
+    return headerAborters.some((headerAborter) =>
+      part == headerAborter,
+    );
+  }
+
+
   let macroName: string;
   if (macroType !== "GUID") {
     macroName = fromFileName(
@@ -193,6 +215,7 @@ function createDirectives(fileUri: vscode.Uri): Array<string> {
       shortenUnderscores,
       removeExtension,
       convertPathToSnakeCase,
+      isHeaderAborter
     );
     if (macroType === "Filename and GUID") {
       macroName += "_" + fromGUID(preventDecimal);
